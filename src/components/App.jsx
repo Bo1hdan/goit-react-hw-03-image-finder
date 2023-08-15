@@ -1,16 +1,82 @@
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
-  );
-};
+import React, { Component } from 'react';
+import { ImageGallery } from './ImageGallery/ImageGallery';
+import { searchImages } from 'LoadImages';
+import { Searchbar } from './Searchbar/Searchbar';
+import { Button } from './Button/Button';
+import { Modal } from './Modal/Modal';
+
+export class App extends Component {
+  state = {
+    images: [],
+    isLoading: false,
+    error: null,
+    keyWord: '',
+    page: 1,
+    isShowModal: false,
+    modalImage: '',
+  };
+
+  handleSearch = async query => {
+    this.setState({ isLoading: true });
+
+    try {
+      const images = await searchImages(query, this.state.page);
+      this.setState(prevState => ({
+        images: [...prevState.images, ...images],
+        page: prevState.page + 1,
+      }));
+    } catch (error) {
+      this.setState({ error });
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  };
+
+  onSubmit = e => {
+    e.preventDefault();
+    const query = e.target.elements.searchWord.value.trim().toLowerCase();
+    if (!query.length) {
+      alert('Please, write a search word');
+      return;
+    }
+    this.setState({
+      keyWord: query,
+      images: [],
+      page: 1,
+    });
+    this.handleSearch(query);
+    e.target.reset();
+  };
+
+  showModal = url => {
+    this.setState({ isShowModal: true });
+    this.setState({ modalImage: url });
+  };
+
+  closeModal = () => {
+    this.setState({ isShowModal: false });
+  };
+
+  render() {
+    const { images, isLoading, error, isShowModal, modalImage } = this.state;
+
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+
+    if (error) {
+      return <div>Error: {error.message}</div>;
+    }
+
+    return (
+      <>
+        <Searchbar onSubmit={this.onSubmit} />
+        <ImageGallery images={images} showModal={this.showModal} />
+        {images.length > 0 && <Button onClick={this.handleSearch} />}
+        {isShowModal && (
+          <Modal image={modalImage} closeModal={this.closeModal} />
+        )}
+      </>
+    );
+  }
+}
