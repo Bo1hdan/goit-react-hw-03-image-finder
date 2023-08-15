@@ -61,14 +61,6 @@ export class App extends Component {
   render() {
     const { images, isLoading, isShowModal, modalImage } = this.state;
 
-    // if (isLoading) {
-    //   return <div>Loading...</div>;
-    // }
-
-    // if (error) {
-    //   return <div>Error: {error.message}</div>;
-    // }
-
     return (
       <>
         <Searchbar onSubmit={this.onSubmit} />
