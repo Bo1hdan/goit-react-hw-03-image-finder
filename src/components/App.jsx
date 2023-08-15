@@ -4,6 +4,7 @@ import { searchImages } from 'LoadImages';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
+import { Loader } from './Loader/Loader';
 
 export class App extends Component {
   state = {
@@ -58,20 +59,21 @@ export class App extends Component {
   };
 
   render() {
-    const { images, isLoading, error, isShowModal, modalImage } = this.state;
+    const { images, isLoading, isShowModal, modalImage } = this.state;
 
-    if (isLoading) {
-      return <div>Loading...</div>;
-    }
+    // if (isLoading) {
+    //   return <div>Loading...</div>;
+    // }
 
-    if (error) {
-      return <div>Error: {error.message}</div>;
-    }
+    // if (error) {
+    //   return <div>Error: {error.message}</div>;
+    // }
 
     return (
       <>
         <Searchbar onSubmit={this.onSubmit} />
         <ImageGallery images={images} showModal={this.showModal} />
+        {isLoading && <Loader />}
         {images.length > 0 && <Button onClick={this.handleSearch} />}
         {isShowModal && (
           <Modal image={modalImage} closeModal={this.closeModal} />
