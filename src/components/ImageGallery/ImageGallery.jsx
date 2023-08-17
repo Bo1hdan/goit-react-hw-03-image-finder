@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 export const ImageGallery = ({ images, showModal }) => {
   return (
-    <ul className={css.ImageGallery}>
+    <ul className={css.ImgGallery}>
       {images.map(image => (
         <ImageGalleryItem key={image.id} image={image} showModal={showModal} />
       ))}
@@ -12,6 +12,6 @@ export const ImageGallery = ({ images, showModal }) => {
   );
 };
 ImageGallery.propTypes = {
-  image: PropTypes.string.isRequired,
+  image: PropTypes.string,
   showModal: PropTypes.func.isRequired,
 };

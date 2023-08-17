@@ -15,22 +15,7 @@ export class App extends Component {
     page: 1,
     isShowModal: false,
     modalImage: '',
-  };
-
-  handleSearch = async query => {
-    this.setState({ isLoading: true });
-
-    try {
-      const images = await searchImages(query, this.state.page);
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images],
-        page: prevState.page + 1,
-      }));
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+    totalImages: 0,
   };
 
   onSubmit = e => {
@@ -45,7 +30,7 @@ export class App extends Component {
       images: [],
       page: 1,
     });
-    this.handleSearch(query);
+
     e.target.reset();
   };
 
@@ -57,18 +42,65 @@ export class App extends Component {
   closeModal = () => {
     this.setState({ isShowModal: false });
   };
+  handleLoadMoreBtn = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
+  componentDidUpdate(_, prevState) {
+    if (
+      prevState.keyWord !== this.state.keyWord ||
+      prevState.page !== this.state.page
+    ) {
+      this.setState({ isLoading: true });
+      searchImages(this.state.keyWord, this.state.page)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          return Promise.reject(
+            new Error(`Nothing found for ${this.state.keyWord}`)
+          );
+        })
+        .then(images => {
+          if (!images.hits.length) {
+            alert('Nothing found');
+          } else {
+            this.setState(prevState => ({
+              images: [...prevState.images, ...images.hits],
+              totalImages: images.totalHits,
+            }));
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          this.setState({ error });
+        })
+        .finally(() => {
+          this.setState({ isLoading: false });
+        });
+    }
+  }
 
   render() {
-    const { images, isLoading, isShowModal, modalImage } = this.state;
+    const { images, isLoading, isShowModal, modalImage, totalImages } =
+      this.state;
 
     return (
       <>
         <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery images={images} showModal={this.showModal} />
+
+        {images.length > 0 && (
+          <ImageGallery images={images} showModal={this.showModal} />
+        )}
+
         {isLoading && <Loader />}
-        {images.length > 0 && <Button onClick={this.handleSearch} />}
+
         {isShowModal && (
           <Modal image={modalImage} closeModal={this.closeModal} />
+        )}
+
+        {totalImages > images.length && !isLoading && (
+          <Button onClick={this.handleLoadMoreBtn} />
         )}
       </>
     );
